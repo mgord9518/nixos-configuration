@@ -5,29 +5,27 @@
 { config, pkgs, lib, ... }:
 {
   imports = [
+    ../common.nix
     ./hardware-configuration.nix
-
-    # Modular config
-    ./modules/environ.nix
-    ./modules/sh.nix
-    ./modules/hosts.nix
-    ./modules/podman.nix
   ];
 
   # Rebuild switch twice per day
   system.autoUpgrade.enable = true;
 
-  # Dedupe files
-  nix.settings.auto-optimise-store = true;
+  virtualisation = {
+    libvirtd.enable = true;
+    waydroid.enable = true;
 
-  virtualisation.libvirtd.enable = true;
-  virtualisation.waydroid.enable = true;
+    podman = {
+      enable = true;
 
-  nix.settings = {
-    experimental-features = [ 
-      "nix-command"
-      "flakes"
-    ];
+      # Create a `docker` alias for podman, to use it as a drop-in replacement
+      dockerCompat = true;
+
+      defaultNetwork.settings = {
+        dns_enabled = true;
+      };
+    };
   };
 
   boot = {
@@ -89,17 +87,8 @@
       #dedicatedServer.openFirewall = true;
     };
 
-    nh = {
-      enable = true;
-      clean.enable = true;
-      clean.extraArgs = "--keep-since 4d --keep 5";
-      flake = "/home/mgord9518/Nix";
-    };
-
     virt-manager.enable = true;
     nix-ld.enable = true;
-    kdeconnect.enable = true;
-    partition-manager.enable = true;
   };
 
   services = {
@@ -111,46 +100,11 @@
       wayland.enable = true;
     };
 
-    flatpak.enable = true;
-
-    mullvad-vpn = {
-      enable  = true;
-      package = pkgs.mullvad-vpn;
-    };
-
-    xserver = {
-      xkb.layout  = "us";
-      xkb.variant = "";
-      autorun     = false;
-
-      # Configure keymap
-      xkb = {
-        options = "caps:swapescape";
-      };
-    };
-
-    # Pipewire for sound
-    pipewire = {
-      enable            = true;
-      alsa.enable       = true;
-      alsa.support32Bit = true;
-      pulse.enable      = true;
-    };
-
-    thermald.enable = true;
     fprintd.enable = true;
   };
 
-  # Apply X11 keymap to Linux TTY
-  console.useXkbConfig = true;
-
   # Enable sound with pipewire.
   security.rtkit.enable = true;
-
-  hardware = {
-    pulseaudio.enable = false;
-    bluetooth.enable = true;
-  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.mgord9518 = {
@@ -168,32 +122,17 @@
 
   environment.systemPackages = with pkgs; [
     # System CLI utils
-    neovim
-    wget
-    xxd
-    file
-    git
-    podman
-    unzip
     ecryptfs
-    wl-clipboard
     pv
     gnupg
-    dash
-    tmux
     imagemagick
-    kdePackages.kdialog
-    kdePackages.breeze-gtk
     qimgv
-    # Extra image formats
-    plasma5Packages.kimageformats
 
     # Extra CLI utils
     jq
     fzf
     squashfuse
     bubblewrap
-    btop
     qemu
 
     # System GUI utils
@@ -201,12 +140,10 @@
     libinput
     wayland
     libxkbcommon
-    discover
 
     # Extra GUI utils
     blender
     dolphin
-    mpv
     gimp
     godot_4
 
@@ -214,10 +151,6 @@
     go
     python3
     zig
-
-    # Internet
-    librewolf
-    ktorrent
 
     # Disk management
     udisks
@@ -229,8 +162,6 @@
   # Don't wait until online to continue booting, this improves startup time
   systemd.services.NetworkManager-wait-online.enable = false;
 
-  security.sudo.package = pkgs.sudo.override { withInsults = true; };
-
   swapDevices = [
     {
       device = "/var/lib/swapfile";
@@ -239,6 +170,20 @@
       size = 16 * 1024;
     }
   ];
+
+  environment.sessionVariables = rec {
+    BROWSER = "librewolf";
+
+    # Keyboard options
+    # Swap ESC and CAPS LOCK
+    XKB_DEFAULT_OPTIONS = "caps:swapescape";
+
+	FLTK_SCALE_FACTOR = "1.5";
+	STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
+
+    CC  = "zig cc";
+    CXX = "zig c++";
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
