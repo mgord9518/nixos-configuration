@@ -22,21 +22,6 @@
   # improves startup time
   systemd.services.NetworkManager-wait-online.enable = false;
 
-  system = {
-    autoUpgrade = {
-      enable = true;
-      operation = "boot";
-
-      allowReboot = true;
-      rebootWindow = {
-        lower = "12:00";
-        upper = "14:00";
-      };
-
-      dates = "10:00";
-    };
-  };
-
   nix = {
     settings.auto-optimise-store = true;
 
