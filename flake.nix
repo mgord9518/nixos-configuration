@@ -16,7 +16,7 @@
     pkgs = nixpkgs.legacyPackages.${system};
   in {
     nixosConfigurations.framework = nixpkgs.lib.nixosSystem {
-      modules = [ ./configuration.nix ];
+      modules = [ ./hosts/framework/configuration.nix ];
     };
   
     homeConfigurations.mgord9518 = home-manager.lib.homeManagerConfiguration {
