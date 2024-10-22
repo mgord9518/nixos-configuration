@@ -2,7 +2,6 @@
 
 {
   imports = [
-    # Modular config
     ./modules/servicemenus.nix
   ];
 
@@ -19,105 +18,6 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = [
-    (pkgs.writeShellScriptBin "mullvad-status" ''
-      status=$(mullvad status | head -n1)
-
-      if [ $(cut -d' ' -f1 <<< "$status") = "Connected" ]; then
-          #echo -n "" $(cut -d' ' -f3- <<< "$status")
-          echo -n ""
-          connected=1
-      else
-          #echo -n " Disconnected"
-          echo -n ""
-      fi
-
-      if [ "$1" = "toggle" ]; then
-          if [ $connected ]; then
-              mullvad disconnect
-          else
-              mullvad connect
-          fi
-      fi
-    '')
-
-    (pkgs.writeShellScriptBin "fzf-config" ''
-      configs="hypr/hyprland.conf
-      waybar/config.json
-      waybar/window_title.json
-      waybar/style.css"
-
-      get_selection() {
-        for p in $PATH; do
-            echo -n "$configs"
-        done | fzf
-      }
-
-      if selection=$( get_selection ); then
-          "$EDITOR" "$HOME/.config/$selection"
-      fi
-    '')
-
-    (pkgs.writeShellScriptBin "vol-display" ''
-    device="@DEFAULT_AUDIO_SINK@"
-
-    if [ $1 ]; then
-        wpctl set-volume -l 1.44 "$device" "$1"
-    fi
-
-    volume=$(wpctl get-volume "$device" | cut -d' ' -f2 | tr -d '.')
-    volume=$((10#$volume))
-
-    dunst_string="volume
-    [ "
-
-    for i in $(seq 48); do
-        [ $((i % 2)) -eq 0 ] && continue
-
-        if [ "$volume" -ge $(((i + 1) * 3)) ]; then
-            dunst_string="''${dunst_string}:"
-        elif [ "$volume" -ge $(((i) * 3)) ]; then
-            dunst_string="''${dunst_string}."
-        else
-            dunst_string="''${dunst_string} "
-        fi
-    done
-
-    dunst_string="$dunst_string ]"
-
-    dunstify -r 69 "$dunst_string"
-    '')
-
-    (pkgs.writeShellScriptBin "brightness-display" ''
-    if [ $1 ]; then
-        brightnessctl s "$1"
-    fi
-
-    brightness_max=$(brightnessctl m)
-    brightness_step=$(($brightness_max / 48))
-
-    brightness=$(brightnessctl g)
-    brightness=$(($brightness / $brightness_step))
-
-    dunst_string="brightness
-    [ "
-
-    for i in $(seq 48); do
-        [ $((i % 2)) -eq 1 ] && continue
-
-        if [ "$brightness" -ge $((i)) ]; then
-            dunst_string="''${dunst_string}:"
-        elif [ "$brightness" -ge $((i - 1)) ]; then
-            dunst_string="''${dunst_string}."
-        else
-            dunst_string="''${dunst_string} "
-        fi
-    done
-
-    dunst_string="$dunst_string ]"
-
-    dunstify -r 69 "$dunst_string"
-    '')
-
     (pkgs.writeShellApplication {
       name = "convert-image";
       runtimeInputs = with pkgs; [
@@ -166,29 +66,8 @@
         };
       };
     };
-
-#    "Convert Image2" = {
-#      mimetypes = [ "image/*" ];
-#      actions = {
-#        "Convert to JXL (lossless)" = {
-#          icon = "video";
-#          exec = ''filename="%f"; ${pkgs.libjxl}/bin/cjxl -q 100 "%f" "''${filename%.*}.jxl"'';
-#        };
-#      };
-#    };
   };
 
-
-  # You can also manage environment variables but you will have to manually
-  # source
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/mgord9518/etc/profile.d/hm-session-vars.sh
-  #
-  # if you don't want to manage your shell through Home Manager.
   home.sessionVariables = {
     # EDITOR = "emacs";
   };
@@ -211,6 +90,39 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+
+    extraConfig = ''
+      " Enable Ctrl+Shift+C / Ctrl+Shift+V for copy and paste
+      noremap <c-s-c> "+yy
+      noremap <c-s-v> "+p
+      
+      set mouse=a
+      set number relativenumber
+      "set t_md=
+      set cursorline
+      
+      set nowrap!
+      set shiftwidth=4
+      set tabstop=4
+      set expandtab
+      
+      " Save undos across Neovim sessions
+      set undodir=~/.cache/nvim/undodir
+      set undofile
+      set undolevels=10000
+      set undoreload=10000
+      
+      " Save cursor position across Neovim sessions
+      autocmd BufReadPost * if @% !~# '\.git[\/\\]COMMIT_EDITMSG$' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif 
+      
+      " Enable integration with system clipboard
+      " Requires xclip for X11 or wl-clipboard for Wayland
+      if has("unnamedplus")
+          set clipboard=unnamedplus
+      else
+          set clipboard=unnamed
+      endif
+    '';
   };
 
   programs.zsh = {
