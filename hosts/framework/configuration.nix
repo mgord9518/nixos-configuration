@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, mgord9518-nur, ... }:
 {
   imports = [
     ../common.nix
@@ -115,14 +115,25 @@
       "wheel"
       "video"
     ];
+    packages = with pkgs; [
+      blender
+      gimp
+      godot_4
+      openrct2
+    ];
   };
 
-  # Only enabled for Steam
-  nixpkgs.config.allowUnfree = true;
+  fonts.packages = [
+    mgord9518-nur.windows-fonts
+  ];
+
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "steam"
+    "steam-unwrapped"
+  ];
 
   environment.systemPackages = with pkgs; [
     # System CLI utils
-    ecryptfs
     pv
     gnupg
     imagemagick
@@ -135,18 +146,6 @@
     bubblewrap
     qemu
 
-    # System GUI utils
-    brightnessctl
-    libinput
-    wayland
-    libxkbcommon
-
-    # Extra GUI utils
-    blender
-    dolphin
-    gimp
-    godot_4
-
     # Programming languages
     go
     python3
@@ -156,8 +155,6 @@
     udisks
     exfatprogs
   ];
-
-  fonts.packages = with pkgs; [];
 
   # Don't wait until online to continue booting, this improves startup time
   systemd.services.NetworkManager-wait-online.enable = false;

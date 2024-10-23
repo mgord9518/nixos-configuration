@@ -114,5 +114,6 @@
 
     kdePackages.kdialog
     kdePackages.breeze-gtk
+    kdePackages.ark
   ];
 }
