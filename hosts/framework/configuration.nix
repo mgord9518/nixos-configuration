@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, mgord9518-nur, ... }:
+{ config, pkgs, lib, mgord9518-nur, mist, ... }:
 {
   imports = [
     ../common.nix
@@ -145,6 +145,7 @@
     squashfuse
     bubblewrap
     qemu
+    mist
 
     # Programming languages
     go

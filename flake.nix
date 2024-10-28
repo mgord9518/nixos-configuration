@@ -12,13 +12,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    mist = { url = "github:mgord9518/mist"; };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, home-manager, nixpkgs, nur, suyu, mgord9518-nur-packages } @ inputs:
+  outputs = { self, home-manager, nixpkgs, nur, suyu, mgord9518-nur-packages, mist } @ inputs:
   let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
@@ -28,6 +30,7 @@
       modules = [ ./hosts/framework/configuration.nix ];
       specialArgs = {
         inherit mgord9518-nur;
+        mist = mist.packages.${system}.default;
       };
     };
 
