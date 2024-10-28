@@ -6,13 +6,9 @@
 
     #nur.url = "github:nix-community/NUR";
 
-    suyu.url = "git+https://git.suyu.dev/suyu/nix-flake";
-    mgord9518-nur-packages = {
-      url = "github:mgord9518/nur";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    mist = { url = "github:mgord9518/mist"; };
+    suyu.url          = "git+https://git.suyu.dev/suyu/nix-flake";
+    mgord9518-nur.url = "github:mgord9518/nur";
+    mist.url          = "github:mgord9518/mist";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -20,17 +16,19 @@
     };
   };
 
-  outputs = { self, home-manager, nixpkgs, nur, suyu, mgord9518-nur-packages, mist } @ inputs:
+  outputs = { self, home-manager, nixpkgs, nur, suyu, mgord9518-nur, mist } @ inputs:
   let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-    mgord9518-nur = mgord9518-nur-packages.legacyPackages.${system};
+    flakes = {
+      mgord9518-nur = mgord9518-nur.legacyPackages.${system};
+      mist = mist.packages.${system}.default;
+    };
   in {
     nixosConfigurations.framework = nixpkgs.lib.nixosSystem {
       modules = [ ./hosts/framework/configuration.nix ];
       specialArgs = {
-        inherit mgord9518-nur;
-        mist = mist.packages.${system}.default;
+        inherit flakes;
       };
     };
 

@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, mgord9518-nur, mist, ... }:
+{ config, pkgs, lib, flakes, ... }:
 {
   imports = [
     ../common.nix
@@ -124,7 +124,7 @@
   };
 
   fonts.packages = [
-    mgord9518-nur.windows-fonts
+    flakes.mgord9518-nur.windows-fonts
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
@@ -145,7 +145,7 @@
     squashfuse
     bubblewrap
     qemu
-    mist
+    flakes.mist
 
     # Programming languages
     go
