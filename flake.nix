@@ -40,6 +40,13 @@
         inherit suyu;
       };
     };
+
+    nixosConfigurations.surface = nixpkgs.lib.nixosSystem {
+      modules = [ ./hosts/surface/configuration.nix ];
+      specialArgs = {
+        inherit flakes;
+      };
+    };
   
     homeConfigurations.mgord9518 = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
