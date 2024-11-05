@@ -124,7 +124,7 @@
   };
 
   fonts.packages = [
-    flakes.mgord9518-nur.windows-fonts
+    #flakes.mgord9518-nur.windows-fonts
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
