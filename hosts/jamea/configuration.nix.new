@@ -3,19 +3,15 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, lib, suyu, ... }:
-let
-  zenityPatch = (pkgs.writeShellScriptBin "zenity" ''
-    pkill steam
-  '');
-in {
+{
   imports = [
+    ../common.nix
     ./hardware-configuration.nix
   ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
 
   boot.kernelParams = [
     "nvidia_drm.fbdev=1"
@@ -26,15 +22,6 @@ in {
   # Don't wait for internet connection to come online when booting,
   # improves startup time
   systemd.services.NetworkManager-wait-online.enable = false;
-
-  nix = {
-    settings.auto-optimise-store = true;
-
-    settings.experimental-features = [ 
-      "nix-command"
-      "flakes"
-    ];
-  };
 
   networking = {
     hostName = "jamea";
@@ -60,8 +47,6 @@ in {
   };
 
   services = {
-    flatpak.enable = true;
-
     # Enable the X11 windowing system.
     xserver.enable = true;
   
@@ -71,12 +56,6 @@ in {
     #displayManager.defaultSession = "plasma";
   
     desktopManager.plasma6.enable = true;
-  
-    # Configure keymap in X11
-    xserver.xkb = {
-      layout = "us";
-      variant = "";
-    };
   };
 
   hardware = {
@@ -107,45 +86,17 @@ in {
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    #alsa.support32Bit = true;
-    pulse.enable = true;
-  };
+  nixpkgs.config.packageOverrides = pkgs: {};
 
-  nixpkgs.config.packageOverrides = pkgs: {
-    
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
   programs = {
     steam = {
       enable = true;
       remotePlay.openFirewall = true;
       dedicatedServer.openFirewall = true;
       localNetworkGameTransfers.openFirewall = true;
-
-#      package = pkgs.steam;
-
-      package = pkgs.steam.override {
-#        extraPkgs = pkgs: [ 
-#	  zenityPatch
-#	];
-#	extraEnv = rec {
-#          PATH = "${zenityPatch}:$PATH";
-#	};
-      };
     };
-
-    kdeconnect.enable = true;
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.mgord9518 = {
     isNormalUser = true;
     description = "mgord9518";
@@ -158,7 +109,6 @@ in {
     packages = with pkgs; [
       kate
       pavucontrol
-      mullvad-vpn
       dolphin-emu
       ktorrent
       mpv
@@ -188,8 +138,6 @@ in {
   };
 
   services = {
-    mullvad-vpn.enable = true;
-
     jellyfin = {
       enable = true;
       openFirewall = true;
