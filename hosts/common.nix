@@ -106,14 +106,15 @@
     dash
     tmux
     btop
-    plasma5Packages.kimageformats
     discover
     mpv
     librewolf
     ktorrent
 
     kdePackages.kdialog
+    kdePackages.kimageformats
     kdePackages.breeze-gtk
     kdePackages.ark
+    kdePackages.kcalc
   ];
 }
