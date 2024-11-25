@@ -102,9 +102,10 @@ in {
     nvidiaSettings = true;
     # 560.35.03
     #package = config.boot.kernelPackages.nvidiaPackages.stable;
-    #package = config.boot.kernelPackages.nvidiaPackages.production;
+    package = config.boot.kernelPackages.nvidiaPackages.production;
+
     # 565.57.01
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
+    #package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   # Enable sound with pipewire.
