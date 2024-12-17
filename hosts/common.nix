@@ -106,7 +106,7 @@
     dash
     tmux
     btop
-    discover
+    #discover
     mpv
     librewolf
     ktorrent

@@ -16,7 +16,7 @@
     };
   };
 
-  outputs = { self, home-manager, nixpkgs, nur, suyu, mgord9518-nur, mist } @ inputs:
+  outputs = { self, home-manager, nixpkgs, suyu, mgord9518-nur, mist } @ inputs:
   let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};

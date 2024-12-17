@@ -120,6 +120,8 @@
       gimp
       godot_4
       openrct2
+      qt6.qtwebview
+      qt6.qtwebengine
     ];
   };
 
@@ -147,6 +149,10 @@
     qemu
     flakes.mist
 
+    #kdePackages.kio-gdrive
+    #kdePackages.kaccounts-integration
+    #kdePackages.kaccounts-providers
+
     # Programming languages
     go
     python3
@@ -164,7 +170,7 @@
     {
       device = "/var/lib/swapfile";
 
-      # 16iGB
+      # 16GiB
       size = 16 * 1024;
     }
   ];
