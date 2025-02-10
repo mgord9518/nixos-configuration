@@ -1,16 +1,23 @@
-{ pkgs, environment, ... }:
+{ config, pkgs, environment, ... }:
 
 {
   imports = [];
-
-  # Dedupe files
-  nix.settings.auto-optimise-store = true;
 
   nix.settings = {
     experimental-features = [ 
       "nix-command"
       "flakes"
     ];
+
+    use-xdg-base-directories = true;
+
+#    gc = {
+#      automatic = true;
+#      dates = weekly;
+#      options = "--delete-older-than 7d";
+#    };
+
+    auto-optimise-store = true;
   };
 
   programs = {
@@ -18,7 +25,7 @@
       enable = true;
       clean.enable = true;
       clean.extraArgs = "--keep-since 4d --keep 5";
-      flake = "/home/mgord9518/Nix";
+      flake = config.users.users.mgord9518.home + "/Nix";
     };
 
     kdeconnect.enable = true;
@@ -26,6 +33,7 @@
   };
 
   services = {
+    pulseaudio.enable = false;
     flatpak.enable = true;
 
     mullvad-vpn = {
@@ -62,7 +70,11 @@
   security.rtkit.enable = true;
 
   hardware = {
-    pulseaudio.enable = false;
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
+
     bluetooth.enable = true;
   };
 
@@ -71,28 +83,17 @@
   environment.sessionVariables = {
     EDITOR  = "nvim";
 
-    XDG_CACHE_HOME  = "$HOME/.cache";
-    XDG_CONFIG_HOME = "$HOME/.config";
-    XDG_DATA_HOME   = "$HOME/.local/share";
-    XDG_STATE_HOME  = "$HOME/.local/state";
-
     # Keyboard options
     # Swap ESC and CAPS LOCK
     XKB_DEFAULT_OPTIONS = "caps:swapescape";
 
-    QT_QPA_PLATFORM   = "wayland";
+#    QT_QPA_PLATFORM   = "wayland";
     GTK_THEME         = "Breeze";
-    GDK_BACKEND       = "wayland,x11";
-    CLUTTER_BACKEND   = "wayland";
+#    GDK_BACKEND       = "wayland,x11";
+#    CLUTTER_BACKEND   = "wayland";
     #SDL_VIDEODRIVER   = "wayland";
 
     TERM = "xterm-256color";
-
-    # Move some annoying files to more appropriate locations
-    WINEPREFIX          = "$XDG_DATA_HOME/wine";
-    LESSHISTFILE        = "$XDG_CACHE_HOME/lesshst";
-    GOPATH              = "$XDG_CACHE_HOME/go";
-    ZIG_LOCAL_CACHE_DIR = "$XDG_CACHE_HOME/zig/local";
   };
 
   environment.systemPackages = with pkgs; [
@@ -106,10 +107,10 @@
     dash
     tmux
     btop
-    #discover
     mpv
     librewolf
     ktorrent
+    home-manager
 
     kdePackages.kdialog
     kdePackages.kimageformats

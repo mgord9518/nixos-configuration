@@ -3,29 +3,18 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, lib, flakes, ... }:
-{
+let
+  steamHome = config.users.users.mgord9518.home + "/.local/garbage/steam";
+in {
   imports = [
     ../common.nix
     ./hardware-configuration.nix
+    ../../modules/xdg.nix
   ];
-
-  # Rebuild switch twice per day
-  system.autoUpgrade.enable = true;
 
   virtualisation = {
     libvirtd.enable = true;
     waydroid.enable = true;
-
-    podman = {
-      enable = true;
-
-      # Create a `docker` alias for podman, to use it as a drop-in replacement
-      dockerCompat = true;
-
-      defaultNetwork.settings = {
-        dns_enabled = true;
-      };
-    };
   };
 
   boot = {
@@ -85,6 +74,19 @@
       enable = true;
       remotePlay.openFirewall = true;
       #dedicatedServer.openFirewall = true;
+
+      package = pkgs.steam.override {
+        extraPkgs = pkgs: with pkgs; [
+          # Workaround xorg cursor issue
+          kdePackages.breeze
+        ];
+        extraEnv = {
+          HOME = steamHome;
+        };
+        extraProfile = ''
+          mkdir -p "${steamHome}"
+        '';
+      };
     };
 
     virt-manager.enable = true;
@@ -95,10 +97,9 @@
     # KDE
     xserver.enable = true;
     desktopManager.plasma6.enable = true;
-    displayManager.sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
+    displayManager.defaultSession = "plasma";
+
+    xserver.displayManager.lightdm.enable = false;
 
     fprintd.enable = true;
   };
@@ -115,8 +116,8 @@
       "wheel"
       "video"
     ];
+
     packages = with pkgs; [
-      blender
       gimp
       godot_4
       openrct2
@@ -124,10 +125,6 @@
       qt6.qtwebengine
     ];
   };
-
-  fonts.packages = [
-    #flakes.mgord9518-nur.windows-fonts
-  ];
 
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
     "steam"
@@ -161,6 +158,10 @@
     # Disk management
     udisks
     exfatprogs
+
+    # Fix Steam cursor
+    xsettingsd
+    xorg.xrdb
   ];
 
   # Don't wait until online to continue booting, this improves startup time
@@ -182,8 +183,8 @@
     # Swap ESC and CAPS LOCK
     XKB_DEFAULT_OPTIONS = "caps:swapescape";
 
-	FLTK_SCALE_FACTOR = "1.5";
-	STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
+    FLTK_SCALE_FACTOR = "1.5";
+    STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
 
     CC  = "zig cc";
     CXX = "zig c++";

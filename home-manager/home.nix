@@ -6,7 +6,11 @@
   ];
 
   nix = {
-    settings.experimental-features = [ "nix-command" "flakes" ];
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    settings.use-xdg-base-directories = true;
     package = pkgs.nix;
   };
 
@@ -14,6 +18,14 @@
   # manage.
   home.username = "mgord9518";
   home.homeDirectory = "/home/mgord9518";
+
+  xdg = {
+    enable = true;
+
+    #configHome = home.directory + "";
+    cacheHome = config.home.homeDirectory + "/.local/cache";
+    configHome = config.home.homeDirectory + "/.local/config";
+  };
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
@@ -101,13 +113,13 @@
       "set t_md=
       set cursorline
       
-      set nowrap!
+      "set nowrap!
       set shiftwidth=4
       set tabstop=4
       set expandtab
       
       " Save undos across Neovim sessions
-      set undodir=~/.cache/nvim/undodir
+      set undodir=${config.xdg.cacheHome}/nvim/undodir
       set undofile
       set undolevels=10000
       set undoreload=10000
@@ -123,18 +135,6 @@
           set clipboard=unnamed
       endif
     '';
-  };
-
-  programs.zsh = {
-    enable = true;
-
-    initExtra = ''
-      export PROMPT='[ %(!.%F{red}.%F{cyan})%n %F{reset}@ %F{yellow}%m %F{reset}]%# '
-      export RPROMPT='[ %F{blue}%~ %F{reset}: %F{magenta}%? %F{reset}]'
-    '';
-
-    history.size = 10000;
-    history.path = "${config.xdg.cacheHome}/zsh/history";
   };
 
   programs.git = {

@@ -1,4 +1,5 @@
 {
+
   description = "System and home-manager configuration";
 
   inputs = {
@@ -10,11 +11,13 @@
     mgord9518-nur.url = "github:mgord9518/nur";
     mist.url          = "github:mgord9518/mist";
 
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+
 
   outputs = { self, home-manager, nixpkgs, suyu, mgord9518-nur, mist } @ inputs:
   let
