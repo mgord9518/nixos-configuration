@@ -1,6 +1,9 @@
 { config, pkgs, ... }:
 
-{
+let
+  garbageHome = config.home.homeDirectory + "/.local/garbage";
+  librewolfHome = garbageHome + "/librewolf";
+in {
   imports = [
     ./modules/servicemenus.nix
   ];
@@ -10,6 +13,7 @@
       "nix-command"
       "flakes"
     ];
+
     settings.use-xdg-base-directories = true;
     package = pkgs.nix;
   };
@@ -25,6 +29,16 @@
     #configHome = home.directory + "";
     cacheHome = config.home.homeDirectory + "/.local/cache";
     configHome = config.home.homeDirectory + "/.local/config";
+
+    desktopEntries.librewolf = {
+      icon = "${pkgs.librewolf}/share/icons/hicolor/128x128/apps/librewolf.png";
+      name = "Librewolf";
+      genericName = "Web Browser";
+      exec = "env HOME=${librewolfHome} librewolf %U";
+      terminal = false;
+      categories = [ "Application" "Network" "WebBrowser" ];
+      mimeType = [ "text/html" "text/xml" ];
+    };
   };
 
   # The home.packages option allows you to install Nix packages into your
@@ -85,57 +99,6 @@
   };
 
   programs.home-manager.enable = true;
-
-  programs.neovim = {
-    enable = true;
-    
-    plugins = [
-    ];
-
-    extraPackages = with pkgs; [
-      #xclip
-      wl-clipboard
-
-      zls
-    ];
-
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-
-    extraConfig = ''
-      " Enable Ctrl+Shift+C / Ctrl+Shift+V for copy and paste
-      noremap <c-s-c> "+yy
-      noremap <c-s-v> "+p
-      
-      set mouse=a
-      set number relativenumber
-      "set t_md=
-      set cursorline
-      
-      "set nowrap!
-      set shiftwidth=4
-      set tabstop=4
-      set expandtab
-      
-      " Save undos across Neovim sessions
-      set undodir=${config.xdg.cacheHome}/nvim/undodir
-      set undofile
-      set undolevels=10000
-      set undoreload=10000
-      
-      " Save cursor position across Neovim sessions
-      autocmd BufReadPost * if @% !~# '\.git[\/\\]COMMIT_EDITMSG$' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif 
-      
-      " Enable integration with system clipboard
-      " Requires xclip for X11 or wl-clipboard for Wayland
-      if has("unnamedplus")
-          set clipboard=unnamedplus
-      else
-          set clipboard=unnamed
-      endif
-    '';
-  };
 
   programs.git = {
     enable = true;

@@ -4,12 +4,14 @@
 
 { config, pkgs, lib, flakes, ... }:
 let
-  steamHome = config.users.users.mgord9518.home + "/.local/garbage/steam";
+  garbageHome = config.users.users.mgord9518.home + "/.local/garbage";
+  steamHome = garbageHome + "/steam";
 in {
   imports = [
-    ../common.nix
     ./hardware-configuration.nix
     ../../modules/xdg.nix
+    ../../modules/common.nix
+    ../../modules/kde_configuration.nix
   ];
 
   virtualisation = {
@@ -51,24 +53,6 @@ in {
     firewall.allowedUDPPorts = [];
   };
 
-  # Set your time zone.
-  time.timeZone = "America/Boise";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS        = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT    = "en_US.UTF-8";
-    LC_MONETARY       = "en_US.UTF-8";
-    LC_NAME           = "en_US.UTF-8";
-    LC_NUMERIC        = "en_US.UTF-8";
-    LC_PAPER          = "en_US.UTF-8";
-    LC_TELEPHONE      = "en_US.UTF-8";
-    LC_TIME           = "en_US.UTF-8";
-  };
-
   programs = {
     steam = {
       enable = true;
@@ -76,28 +60,67 @@ in {
       #dedicatedServer.openFirewall = true;
 
       package = pkgs.steam.override {
+        # Workaround X11 cursor issue
         extraPkgs = pkgs: with pkgs; [
-          # Workaround xorg cursor issue
           kdePackages.breeze
         ];
-        extraEnv = {
-          HOME = steamHome;
-        };
+
+        # Prevent Steam from dumping files directly in $HOME
+        extraEnv = { HOME = steamHome; };
         extraProfile = ''
           mkdir -p "${steamHome}"
         '';
       };
     };
 
-    virt-manager.enable = true;
-    nix-ld.enable = true;
+    nvf = {
+      enable = true;
+      settings.vim = {
+        useSystemClipboard = true;
+        undoFile.enable    = true;
+        searchCase         = "ignore";
+
+        theme = {
+          enable = true;
+          name   = "gruvbox";
+          style  = "dark";
+        };
+
+        languages = {
+          nix.enable    = true;
+          zig.enable    = true;
+          clang.enable  = true;
+          nim.enable    = true;
+          rust.enable   = true;
+          go.enable     = true;
+          python.enable = true;
+        };
+
+        options = {
+          shiftwidth = 4;
+        };
+
+        luaConfigPost = ''
+          -- Restore cursor position
+          vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+              pattern = { "*" },
+              callback = function()
+                  vim.api.nvim_exec('silent! normal! g`"zv', false)
+              end,
+          })
+        '';
+      };
+    };
   };
 
   services = {
     # KDE
     xserver.enable = true;
     desktopManager.plasma6.enable = true;
-    displayManager.defaultSession = "plasma";
+    #displayManager.defaultSession = "plasma";
+
+    #desktopManager.cosmic.enable = true;
+    #displayManager.cosmic-greeter.enable = true;
 
     xserver.displayManager.lightdm.enable = false;
 
@@ -123,6 +146,7 @@ in {
       openrct2
       qt6.qtwebview
       qt6.qtwebengine
+      lutris
     ];
   };
 
@@ -162,6 +186,11 @@ in {
     # Fix Steam cursor
     xsettingsd
     xorg.xrdb
+
+    (pkgs.writeShellScriptBin "librewolf" ''
+      HOME="${librewolfHome}" ${pkgs.librewolf}/bin/librewolf
+    '')
+
   ];
 
   # Don't wait until online to continue booting, this improves startup time
@@ -185,6 +214,8 @@ in {
 
     FLTK_SCALE_FACTOR = "1.5";
     STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
+
+    COSMIC_DATA_CONTROL_ENABLED = "1";
 
     CC  = "zig cc";
     CXX = "zig c++";

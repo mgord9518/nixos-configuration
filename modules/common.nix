@@ -11,12 +11,6 @@
 
     use-xdg-base-directories = true;
 
-#    gc = {
-#      automatic = true;
-#      dates = weekly;
-#      options = "--delete-older-than 7d";
-#    };
-
     auto-optimise-store = true;
   };
 
@@ -27,9 +21,6 @@
       clean.extraArgs = "--keep-since 4d --keep 5";
       flake = config.users.users.mgord9518.home + "/Nix";
     };
-
-    kdeconnect.enable = true;
-    partition-manager.enable = true;
   };
 
   services = {
@@ -87,12 +78,6 @@
     # Swap ESC and CAPS LOCK
     XKB_DEFAULT_OPTIONS = "caps:swapescape";
 
-#    QT_QPA_PLATFORM   = "wayland";
-    GTK_THEME         = "Breeze";
-#    GDK_BACKEND       = "wayland,x11";
-#    CLUTTER_BACKEND   = "wayland";
-    #SDL_VIDEODRIVER   = "wayland";
-
     TERM = "xterm-256color";
   };
 
@@ -107,15 +92,25 @@
     dash
     tmux
     btop
-    mpv
-    librewolf
-    ktorrent
     home-manager
-
-    kdePackages.kdialog
-    kdePackages.kimageformats
-    kdePackages.breeze-gtk
-    kdePackages.ark
-    kdePackages.kcalc
   ];
+
+  # Set your time zone.
+  time.timeZone = "America/Boise";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS        = "en_US.UTF-8";
+    LC_IDENTIFICATION = "en_US.UTF-8";
+    LC_MEASUREMENT    = "en_US.UTF-8";
+    LC_MONETARY       = "en_US.UTF-8";
+    LC_NAME           = "en_US.UTF-8";
+    LC_NUMERIC        = "en_US.UTF-8";
+    LC_PAPER          = "en_US.UTF-8";
+    LC_TELEPHONE      = "en_US.UTF-8";
+    LC_TIME           = "en_US.UTF-8";
+  };
+
 }
