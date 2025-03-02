@@ -4,18 +4,16 @@
 
 { config, pkgs, lib, suyu, ... }:
 let
-  zenityPatch = (pkgs.writeShellScriptBin "zenity" ''
-    pkill steam
-  '');
+  steamHome = config.users.users.mgord9518.home + "/.local/garbage/steam";
 in {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/xdg.nix
   ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
 
   boot.kernelParams = [
     "nvidia_drm.fbdev=1"
@@ -30,11 +28,15 @@ in {
   nix = {
     settings.auto-optimise-store = true;
 
+    settings.use-xdg-base-directories = true;
+
     settings.experimental-features = [ 
       "nix-command"
       "flakes"
     ];
   };
+
+  xdg.icons.fallbackCursorThemes = [ "breeze" ];
 
   networking = {
     hostName = "jamea";
@@ -71,11 +73,22 @@ in {
     #displayManager.defaultSession = "plasma";
   
     desktopManager.plasma6.enable = true;
+
+    ratbagd.enable = true;
   
     # Configure keymap in X11
     xserver.xkb = {
       layout = "us";
       variant = "";
+    };
+
+    xserver.videoDrivers = [ "nvidia" ];
+
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      #alsa.support32Bit = true;
+      pulse.enable = true;
     };
   };
 
@@ -91,39 +104,27 @@ in {
   };
   
   # NVidia drivers
-  services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
-    #powerManagement.finegrained = true;
 
     open = false;
 
     nvidiaSettings = true;
     # 560.35.03
     #package = config.boot.kernelPackages.nvidiaPackages.stable;
-    package = config.boot.kernelPackages.nvidiaPackages.production;
+    #package = config.boot.kernelPackages.nvidiaPackages.production;
 
     # 565.57.01
-    #package = config.boot.kernelPackages.nvidiaPackages.beta;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    #alsa.support32Bit = true;
-    pulse.enable = true;
-  };
 
   nixpkgs.config.packageOverrides = pkgs: {
     
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
   programs = {
     steam = {
       enable = true;
@@ -131,16 +132,25 @@ in {
       dedicatedServer.openFirewall = true;
       localNetworkGameTransfers.openFirewall = true;
 
-#      package = pkgs.steam;
-
       package = pkgs.steam.override {
-#        extraPkgs = pkgs: [ 
-#	  zenityPatch
-#	];
-#	extraEnv = rec {
-#          PATH = "${zenityPatch}:$PATH";
-#	};
+        extraPkgs = pkgs: with pkgs; [
+          # Workaround xorg cursor issue
+          kdePackages.breeze
+        ];
+        extraEnv = {
+          HOME = steamHome;
+        };
+        extraProfile = ''
+          mkdir -p "${steamHome}"
+        '';
       };
+    };
+
+    nh = {
+      enable = true;
+      clean.enable = true;
+      clean.extraArgs = "--keep-since 4d --keep 5";
+      flake = "/home/mgord9518/Nix";
     };
 
     kdeconnect.enable = true;
@@ -157,15 +167,13 @@ in {
     ];
 
     packages = with pkgs; [
-      kate
+      discord
+      kdePackages.kate
       pavucontrol
       mullvad-vpn
       dolphin-emu
-      ktorrent
       mpv
-      discover
-      BeatSaberModManager
-      wineWow64Packages.stable
+      wineWowPackages.stable
       unrar
       paprefs
       p7zip
@@ -177,6 +185,13 @@ in {
       lutris
       kdePackages.breeze-gtk
       git
+      piper
+      deluge
+      handbrake
+      kdePackages.partitionmanager
+      lutris
+      heroic
+      librewolf
 
       suyu.packages.x86_64-linux.suyu
       
@@ -197,6 +212,7 @@ in {
     };
 
     openssh.enable = true;
+    pulseaudio.enable = false;
   };
 
   # Enable automatic login for the user.
@@ -208,7 +224,7 @@ in {
 
   environment.sessionVariables = {
     GTK_THEME = "Breeze";
-    FLAKE = "/home/mgord9518/Nix";
+    #FLAKE = "/home/mgord9518/Nix";
   };
 
   # List packages installed in system profile. To search, run:
@@ -216,15 +232,14 @@ in {
   environment.systemPackages = with pkgs; [
     neovim
     kdePackages.breeze-gtk
-    nh
   ];
 
   # Open ports in the firewall.
   networking.firewall = {
     allowedTCPPortRanges = [];
 
-    allowedTCPPorts = [ ];
-    allowedUDPPorts = [ ];
+    allowedTCPPorts = [];
+    allowedUDPPorts = [];
   };
 
   # This value determines the NixOS release from which the default
@@ -234,5 +249,4 @@ in {
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }

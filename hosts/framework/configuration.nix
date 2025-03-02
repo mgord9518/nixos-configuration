@@ -6,6 +6,7 @@
 let
   garbageHome = config.users.users.mgord9518.home + "/.local/garbage";
   steamHome = garbageHome + "/steam";
+  librewolfHome = garbageHome + "/librewolf";
 in {
   imports = [
     ./hardware-configuration.nix
@@ -189,6 +190,10 @@ in {
 
     (pkgs.writeShellScriptBin "librewolf" ''
       HOME="${librewolfHome}" ${pkgs.librewolf}/bin/librewolf
+    '')
+
+    (pkgs.writeShellScriptBin "wget" ''
+      ${pkgs.wget}/bin/wget --no-hsts
     '')
 
   ];
