@@ -3,7 +3,8 @@
 
 { config, pkgs, lib, ... }:
 let
-  home       = config.users.users.mgord9518.home;
+  #home       = config.users.users.mgord9518.home;
+  home       = "$HOME";
   local      = "${home}/.local";
   cacheHome  = "${local}/cache";
   configHome = "${local}/config";
@@ -17,7 +18,7 @@ let
   # those cases
   garbageHome = "${local}/garbage";
 in {
-  environment.sessionVariables = {
+  environment.sessionVariables = rec {
     XDG_CACHE_HOME  = cacheHome;
     XDG_CONFIG_HOME = configHome;
     XDG_DATA_HOME   = dataHome;

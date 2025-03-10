@@ -1,8 +1,4 @@
-{ config, pkgs, environment, ... }:
-
-{
-  imports = [];
-
+{ config, pkgs, environment, ... }: {
   nix.settings = {
     experimental-features = [ 
       "nix-command"
@@ -10,7 +6,6 @@
     ];
 
     use-xdg-base-directories = true;
-
     auto-optimise-store = true;
   };
 
@@ -19,7 +14,46 @@
       enable = true;
       clean.enable = true;
       clean.extraArgs = "--keep-since 4d --keep 5";
-      flake = config.users.users.mgord9518.home + "/Nix";
+      flake = "/home/mgord9518/Nix";
+    };
+
+    nvf = {
+      enable = true;
+      settings.vim = {
+        useSystemClipboard = true;
+        undoFile.enable    = true;
+        searchCase         = "ignore";
+
+        theme = {
+          enable = true;
+          name   = "gruvbox";
+          style  = "dark";
+        };
+
+        languages = {
+          nix.enable    = true;
+          zig.enable    = true;
+          clang.enable  = true;
+          nim.enable    = true;
+          rust.enable   = true;
+          go.enable     = true;
+          python.enable = true;
+        };
+
+        options = {
+          shiftwidth = 4;
+        };
+
+        luaConfigPost = ''
+          -- Restore cursor position
+          vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+              pattern = { "*" },
+              callback = function()
+                  vim.api.nvim_exec('silent! normal! g`"zv', false)
+              end,
+          })
+        '';
+      };
     };
   };
 
@@ -51,7 +85,7 @@
       pulse.enable      = true;
     };
 
-    thermald.enable = true;
+    #thermald.enable = true;
   };
 
   # Apply X11 keymap to Linux TTY
@@ -63,7 +97,7 @@
   hardware = {
     graphics = {
       enable = true;
-      enable32Bit = true;
+      #enable32Bit = true;
     };
 
     bluetooth.enable = true;
@@ -112,5 +146,4 @@
     LC_TELEPHONE      = "en_US.UTF-8";
     LC_TIME           = "en_US.UTF-8";
   };
-
 }
