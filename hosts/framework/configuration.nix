@@ -1,12 +1,7 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { inputs, config, pkgs, lib, flakes, ... }:
 let
   garbageHome = config.users.users.mgord9518.home + "/.local/garbage";
   steamHome = garbageHome + "/steam";
-  librewolfHome = garbageHome + "/librewolf";
 in {
   imports = [
     ./hardware-configuration.nix
@@ -14,16 +9,21 @@ in {
     ../../modules/common.nix
   ];
 
-  virtualisation = {
-    #waydroid.enable = true;
-  };
-
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
 
     kernelParams = [
       "mem_sleep_default=deep"
+
+      # Silent boot
+      "quiet"
+      "splash"
+      "boot.shell_on_fail"
+      "loglevel=3"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_priority=3"
     ];
 
     binfmt.emulatedSystems = [
@@ -33,6 +33,25 @@ in {
     kernelModules = [
       "ecryptfs"
     ];
+
+    plymouth = {
+      enable = true;
+      theme = "bgrt";
+#      themePackages = with pkgs; [
+#        # By default we would install all themes
+#        (adi1090x-plymouth-themes.override {
+#          selected_themes = [ "hexagon_dots_alt" ];
+#        })
+#      ];
+    };
+
+    consoleLogLevel = 0;
+    initrd.verbose = false;
+
+    # Hide the OS choice for bootloaders.
+    # It's still possible to open the bootloader list by pressing any key
+    # It will just not appear on screen unless a key is pressed
+    loader.timeout = 0;
   };
 
   networking = {
@@ -71,10 +90,10 @@ in {
       package = pkgs.steam.override {
         # Workaround X11 cursor issue
         extraPkgs = pkgs: with pkgs; [
-          kdePackages.breeze
+          adwaita-icon-theme
         ];
 
-        # Prevent Steam from dumping files directly in $HOME
+        # Prevent Steam from dumping files directly in our real $HOME
         extraEnv = { HOME = steamHome; };
         extraProfile = ''
           mkdir -p "${steamHome}"
@@ -131,7 +150,6 @@ in {
     jq
     bubblewrap
     qemu
-    flakes.mist
 
     # Programming languages
     go
@@ -168,22 +186,18 @@ in {
   environment.sessionVariables = rec {
     GTK_THEME = "adw-gtk3-dark";
 
-    STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
+    #STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
 
-    COSMIC_DATA_CONTROL_ENABLED = "1";
+    #COSMIC_DATA_CONTROL_ENABLED = "1";
 
     CC  = "zig cc";
     CXX = "zig c++";
   };
 
-
-programs.bash = {
-  interactiveShellInit = ''
-    exec mist
-  '';
-};
-
-  home-manager.users.mgord9518 = import ./home.nix;
+  home-manager = {
+    users.mgord9518 = import ./home.nix;
+    extraSpecialArgs = { inherit inputs; inherit flakes; };
+  };
 
   system.stateVersion = "25.05";
 }

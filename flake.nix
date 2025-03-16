@@ -34,6 +34,7 @@
         ];
   
         specialArgs = {
+          inherit inputs;
           inherit flakes;
         };
       };

@@ -1,9 +1,4 @@
-{ config, pkgs, ... }:
-
-let
-  garbageHome = config.home.homeDirectory + "/.local/garbage";
-  librewolfHome = garbageHome + "/librewolf";
-in {
+{ inputs, flakes, config, pkgs, ... }: {
   home.username = "mgord9518";
   home.homeDirectory = "/home/mgord9518";
 
@@ -33,6 +28,10 @@ in {
     userEmail = "mgord9518@gmail.com";
   };
 
+  dconf.settings = {
+    "org/gnome/Console" = { shell = [ "${flakes.mist}/bin/mist" ]; };
+  };
+
   programs.firefox = {
     enable = true;
     profiles.default = {
@@ -40,25 +39,22 @@ in {
       name = "Default profile";
       isDefault = true;
 
-#      extensions = with firefox-addons; [
-#        ublock-origin
-#      ];
-
       settings = {
         "sidebar.verticalTabs" = true;
+
+        # Firefox scrolls too fast by default on Linux
         "mousewheel.default.delta_multiplier_y" = 50;
       };
     };
     policies = {
       ExtensionSettings = {
         "*".installation_mode = "blocked"; # blocks all addons except the ones specified below
-        # uBlock Origin:
         "uBlock0@raymondhill.net" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
           installation_mode = "force_installed";
         };
-        "SponsorBlock" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/file/4424639/sponsorblock-5.11.5.xpi";
+        "sponsorBlocker@ajay.app" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/file/4451103/sponsorblock-5.11.8.xpi";
           installation_mode = "force_installed";
         };
       };
@@ -72,6 +68,7 @@ in {
       { package = pkgs.gnomeExtensions.dash-to-dock; }
       { package = pkgs.gnomeExtensions.tiling-assistant; }
       { package = pkgs.gnomeExtensions.system-monitor; }
+      { package = pkgs.gnomeExtensions.blur-my-shell; }
     ];
   };
 
