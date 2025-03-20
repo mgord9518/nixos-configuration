@@ -1,8 +1,10 @@
-{ inputs, flakes, config, pkgs, ... }: {
+{ inputs, flakes, config, pkgs, ... }: rec {
   home.username = "mgord9518";
   home.homeDirectory = "/home/mgord9518";
 
-  imports = [];
+  imports = [
+    ../../modules/home/firefox-tweaks.nix
+  ];
 
   nix = {
     settings.experimental-features = [
@@ -16,9 +18,11 @@
   xdg = {
     enable = true;
 
-    cacheHome = config.home.homeDirectory + "/.local/cache";
+    cacheHome  = config.home.homeDirectory + "/.local/cache";
     configHome = config.home.homeDirectory + "/.local/config";
   };
+
+  home.file."${xdg.configHome}/monitors.xml".source = ./monitors.xml;
 
   programs.home-manager.enable = true;
 
@@ -29,36 +33,7 @@
   };
 
   dconf.settings = {
-    "org/gnome/Console" = { shell = [ "${flakes.mist}/bin/mist" ]; };
-  };
-
-  programs.firefox = {
-    enable = true;
-    profiles.default = {
-      id = 0;
-      name = "Default profile";
-      isDefault = true;
-
-      settings = {
-        "sidebar.verticalTabs" = true;
-
-        # Firefox scrolls too fast by default on Linux
-        "mousewheel.default.delta_multiplier_y" = 50;
-      };
-    };
-    policies = {
-      ExtensionSettings = {
-        "*".installation_mode = "blocked"; # blocks all addons except the ones specified below
-        "uBlock0@raymondhill.net" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-          installation_mode = "force_installed";
-        };
-        "sponsorBlocker@ajay.app" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/file/4451103/sponsorblock-5.11.8.xpi";
-          installation_mode = "force_installed";
-        };
-      };
-    };
+    "org/gnome/Console" = { shell = [ "${flakes.mgord9518-nur.mist}/bin/mist" ]; };
   };
 
   programs.gnome-shell = {

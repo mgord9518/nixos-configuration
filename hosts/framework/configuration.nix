@@ -125,7 +125,6 @@ in {
     ];
 
     packages = with pkgs; [
-     gimp
      godot_4
      #openrct2
      lutris
@@ -160,10 +159,6 @@ in {
     exfatprogs
     popsicle
 
-    # Fix Steam cursor
-    xsettingsd
-    xorg.xrdb
-
     adw-gtk3
 
     (pkgs.writeShellScriptBin "wget" ''
@@ -186,10 +181,6 @@ in {
   environment.sessionVariables = rec {
     GTK_THEME = "adw-gtk3-dark";
 
-    #STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
-
-    #COSMIC_DATA_CONTROL_ENABLED = "1";
-
     CC  = "zig cc";
     CXX = "zig c++";
   };
@@ -197,7 +188,14 @@ in {
   home-manager = {
     users.mgord9518 = import ./home.nix;
     extraSpecialArgs = { inherit inputs; inherit flakes; };
+
+    users.gdm = { lib, ... }: {
+      home.file.".local/config/monitors.xml".source = ./monitors.xml;
+
+      home.stateVersion = "23.05";
+    };
   };
+
 
   system.stateVersion = "25.05";
 }

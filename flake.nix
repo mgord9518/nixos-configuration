@@ -34,7 +34,19 @@
         ];
   
         specialArgs = {
-          inherit inputs;
+          inherit flakes;
+        };
+      };
+
+
+      tv = nixpkgs.lib.nixosSystem {
+        modules = [
+	  ./hosts/tv/configuration.nix
+          inputs.nvf.nixosModules.default
+          inputs.home-manager.nixosModules.default
+	];
+        
+        specialArgs = {
           inherit flakes;
         };
       };
