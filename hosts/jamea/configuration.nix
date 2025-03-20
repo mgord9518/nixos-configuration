@@ -1,106 +1,68 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, lib, suyu, ... }:
+{ flakes, config, pkgs, lib, ... }:
 let
   steamHome = config.users.users.mgord9518.home + "/.local/garbage/steam";
 in {
   imports = [
     ./hardware-configuration.nix
     ../../modules/xdg.nix
+    ../../modules/common.nix
   ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
 
-  boot.kernelParams = [
-    "nvidia_drm.fbdev=1"
-    "nvidia-drm.modeset=1"
-    "module_blacklist=i915" 
-  ];
+    kernelParams = [
+      "mem_sleep_default=deep"
+
+      # Silent boot
+      "quiet"
+      "splash"
+      "boot.shell_on_fail"
+      "loglevel=3"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_priority=3"
+
+      "nvidia_drm.fbdev=1"
+      "nvidia-drm.modeset=1"
+      "module_blacklist=i915" 
+    ];
+
+    plymouth = {
+      enable = true;
+      theme = "bgrt";
+    };
+
+    consoleLogLevel = 0;
+    initrd.verbose = false;
+
+    # Hide the OS choice for bootloaders.
+    # It's still possible to open the bootloader list by pressing any key
+    # It will just not appear on screen unless a key is pressed
+    loader.timeout = 0;
+  };
 
   # Don't wait for internet connection to come online when booting,
   # improves startup time
   systemd.services.NetworkManager-wait-online.enable = false;
-
-  nix = {
-    settings.auto-optimise-store = true;
-
-    settings.use-xdg-base-directories = true;
-
-    settings.experimental-features = [ 
-      "nix-command"
-      "flakes"
-    ];
-  };
-
-  xdg.icons.fallbackCursorThemes = [ "breeze" ];
 
   networking = {
     hostName = "jamea";
     networkmanager.enable = true;
   };
 
-  # Set your time zone.
-  time.timeZone = "America/Boise";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
-
   services = {
-    flatpak.enable = true;
-
     # Enable the X11 windowing system.
     xserver.enable = true;
-  
-    # Enable the KDE Plasma Desktop Environment.
-    displayManager.sddm.enable = true;
-    displayManager.defaultSession = "plasmax11";
-    #displayManager.defaultSession = "plasma";
-  
-    desktopManager.plasma6.enable = true;
 
+    xserver.desktopManager.gnome.enable = true;
+    xserver.displayManager.gdm.enable = true;
+    displayManager.defaultSession = "gnome";
+  
     ratbagd.enable = true;
   
-    # Configure keymap in X11
-    xserver.xkb = {
-      layout = "us";
-      variant = "";
-    };
-
     xserver.videoDrivers = [ "nvidia" ];
-
-    pipewire = {
-      enable = true;
-      alsa.enable = true;
-      #alsa.support32Bit = true;
-      pulse.enable = true;
-    };
-  };
-
-  hardware = {
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-  
-    bluetooth.enable = true;
-    bluetooth.powerOnBoot = true;
-    steam-hardware.enable = true;
   };
   
   # NVidia drivers
@@ -121,10 +83,6 @@ in {
 
   security.rtkit.enable = true;
 
-  nixpkgs.config.packageOverrides = pkgs: {
-    
-  };
-
   programs = {
     steam = {
       enable = true;
@@ -135,7 +93,7 @@ in {
       package = pkgs.steam.override {
         extraPkgs = pkgs: with pkgs; [
           # Workaround xorg cursor issue
-          kdePackages.breeze
+          adwaita-icon-theme
         ];
         extraEnv = {
           HOME = steamHome;
@@ -145,15 +103,6 @@ in {
         '';
       };
     };
-
-    nh = {
-      enable = true;
-      clean.enable = true;
-      clean.extraArgs = "--keep-since 4d --keep 5";
-      flake = "/home/mgord9518/Nix";
-    };
-
-    kdeconnect.enable = true;
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -168,7 +117,6 @@ in {
 
     packages = with pkgs; [
       discord
-      kdePackages.kate
       pavucontrol
       mullvad-vpn
       dolphin-emu
@@ -177,23 +125,22 @@ in {
       unrar
       paprefs
       p7zip
-      kdePackages.kdialog
       libnotify
       unzip
       jq
       cpulimit
       lutris
-      kdePackages.breeze-gtk
       git
       piper
       deluge
       handbrake
-      kdePackages.partitionmanager
       lutris
       heroic
       librewolf
 
-      suyu.packages.x86_64-linux.suyu
+      adw-gtk3
+
+      flakes.suyu
       
       # Jellyfin server
       ffmpeg-full
@@ -222,18 +169,6 @@ in {
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  environment.sessionVariables = {
-    GTK_THEME = "Breeze";
-    #FLAKE = "/home/mgord9518/Nix";
-  };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    neovim
-    kdePackages.breeze-gtk
-  ];
-
   # Open ports in the firewall.
   networking.firewall = {
     allowedTCPPortRanges = [];
@@ -242,11 +177,14 @@ in {
     allowedUDPPorts = [];
   };
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  environment.sessionVariables = rec {
+    GTK_THEME = "adw-gtk3-dark";
+  };
+
+  home-manager = {
+    users.mgord9518 = import ./home.nix;
+    extraSpecialArgs = { inherit flakes; };
+  };
+
   system.stateVersion = "24.05"; # Did you read the comment?
 }
