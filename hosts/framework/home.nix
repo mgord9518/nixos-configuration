@@ -34,6 +34,9 @@
 
   dconf.settings = {
     "org/gnome/Console" = { shell = [ "${flakes.mgord9518-nur.mist}/bin/mist" ]; };
+
+    "org/gnome/desktop/interface" = { gtk-theme    = "adw-gtk3-dark"; };
+    "org/gnome/desktop/interface" = { color-scheme = "prefer-dark"; };
   };
 
   programs.gnome-shell = {

@@ -37,8 +37,6 @@
   ]);
 
   environment.sessionVariables = rec {
-    GTK_THEME = "adw-gtk3-dark";
-
     CC  = "zig cc";
     CXX = "zig c++";
   };
