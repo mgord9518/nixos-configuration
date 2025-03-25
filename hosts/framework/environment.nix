@@ -7,12 +7,13 @@
     # System CLI utils
     pv
     gnupg
-    imagemagick
+    libsecret
 
     # Extra CLI utils
     jq
     bubblewrap
     qemu
+    imagemagick
 
     # Programming languages
     go
