@@ -45,7 +45,7 @@ in {
 
   # Don't wait for internet connection to come online when booting,
   # improves startup time
-  systemd.services.NetworkManager-wait-online.enable = false;
+  #systemd.services.NetworkManager-wait-online.enable = false;
 
   networking = {
     hostName = "jamea";

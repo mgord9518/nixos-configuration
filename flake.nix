@@ -2,7 +2,8 @@
   description = "System configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url        = "github:NixOS/nixpkgs?ref=nixos-unstable";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     suyu.url          = "git+https://git.suyu.dev/suyu/nix-flake";
     mgord9518-nur.url = "github:mgord9518/nur";
@@ -15,20 +16,21 @@
     };
   };
 
-  outputs = { self, home-manager, nixpkgs, suyu, ... } @ inputs:
+  outputs = { self, home-manager, nixpkgs, ... } @ inputs:
   let
     system = "x86_64-linux";
 
     flakes = {
       mgord9518-nur = inputs.mgord9518-nur.legacyPackages.${system};
       mist          = inputs.mist.packages.${system}.default;
-      suyu          = suyu.packages.${system}.default;
+      suyu          = inputs.suyu.packages.${system}.default;
     };
   in {
     nixosConfigurations = {
       framework = nixpkgs.lib.nixosSystem {
         modules = [
           ./hosts/framework/configuration.nix
+          inputs.nixos-hardware.nixosModules.framework-12th-gen-intel
           inputs.nvf.nixosModules.default
           inputs.home-manager.nixosModules.default
         ];
@@ -55,7 +57,7 @@
         modules = [ ./hosts/jamea/configuration.nix ];
   
         specialArgs = {
-          inherit suyu;
+          inherit flakes;
         };
       };
   

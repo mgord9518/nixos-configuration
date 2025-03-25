@@ -1,4 +1,4 @@
-{ config, pkgs, environment, ... }: {
+{ pkgs, environment, ... }: {
   nix.settings = {
     experimental-features = [ 
       "nix-command"
@@ -125,8 +125,6 @@
     wl-clipboard
     dash
     tmux
-    btop
-    home-manager
   ];
 
   # Set your time zone.

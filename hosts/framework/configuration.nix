@@ -1,75 +1,23 @@
 { inputs, config, pkgs, lib, flakes, ... }:
 let
-  garbageHome = config.users.users.mgord9518.home + "/.local/garbage";
+  user = "mgord9518";
+  garbageHome = config.users.users.${user}.home + "/.local/garbage";
   steamHome = garbageHome + "/steam";
-in {
+in rec {
   imports = [
     ./hardware-configuration.nix
+    ./environment.nix
+    ./boot.nix
     ../../modules/xdg.nix
     ../../modules/common.nix
+    ../../modules/firefox-policies.nix
   ];
-
-  boot = {
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
-
-    kernelParams = [
-      "mem_sleep_default=deep"
-
-      # Silent boot
-      "quiet"
-      "splash"
-      "boot.shell_on_fail"
-      "loglevel=3"
-      "rd.systemd.show_status=false"
-      "rd.udev.log_level=3"
-      "udev.log_priority=3"
-    ];
-
-    binfmt.emulatedSystems = [
-      "aarch64-linux"
-    ];
-
-    kernelModules = [
-      "ecryptfs"
-    ];
-
-    plymouth = {
-      enable = true;
-      theme = "bgrt";
-#      themePackages = with pkgs; [
-#        # By default we would install all themes
-#        (adi1090x-plymouth-themes.override {
-#          selected_themes = [ "hexagon_dots_alt" ];
-#        })
-#      ];
-    };
-
-    consoleLogLevel = 0;
-    initrd.verbose = false;
-
-    # Hide the OS choice for bootloaders.
-    # It's still possible to open the bootloader list by pressing any key
-    # It will just not appear on screen unless a key is pressed
-    loader.timeout = 0;
-  };
 
   networking = {
     hostName = "framework";
 
     # Enable networking
     networkmanager.enable = true;
-
-    # Open ports in the firewall.
-    firewall.allowedTCPPortRanges = [
-      # GSConnect
-      { from = 1714; to = 1764; }
-    ];
-
-    firewall.allowedUDPPortRanges = [
-      # GSConnect
-      { from = 1714; to = 1764; }
-    ];
 
     firewall.allowedTCPPorts = [
       # Python HTTP server default
@@ -88,7 +36,7 @@ in {
       #dedicatedServer.openFirewall = true;
 
       package = pkgs.steam.override {
-        # Workaround X11 cursor issue
+        # Workaround cursor issue
         extraPkgs = pkgs: with pkgs; [
           adwaita-icon-theme
         ];
@@ -103,19 +51,17 @@ in {
   };
 
   services = {
-    # GNOME
-    xserver.enable = true;
-    xserver.desktopManager.gnome.enable = true;
-    xserver.displayManager.gdm.enable = true;
+    xserver = {
+      enable = true;
+      desktopManager.gnome.enable = true;
+      displayManager.gdm.enable = true;
 
-    fprintd.enable = true;
+      excludePackages = with pkgs; [ xterm ]; 
+    };
   };
 
-  # Enable sound with pipewire.
-  security.rtkit.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.mgord9518 = {
+  users.users.${user} = {
     isNormalUser = true;
     description = "Mathew Gordon";
     extraGroups = [
@@ -136,39 +82,6 @@ in {
     "steam-unwrapped"
   ];
 
-  environment.systemPackages = with pkgs; [
-    # System GUI utils
-    gdm-settings
-
-    # System CLI utils
-    pv
-    gnupg
-    imagemagick
-
-    # Extra CLI utils
-    jq
-    bubblewrap
-    qemu
-
-    # Programming languages
-    go
-    python3
-    zig
-
-    # Disk management
-    exfatprogs
-    popsicle
-
-    adw-gtk3
-
-    (pkgs.writeShellScriptBin "wget" ''
-      ${pkgs.wget}/bin/wget --no-hsts
-    '')
-  ];
-
-  # Don't wait until online to continue booting, this improves startup time
-  systemd.services.NetworkManager-wait-online.enable = false;
-
   swapDevices = [
     {
       device = "/var/lib/swapfile";
@@ -178,16 +91,9 @@ in {
     }
   ];
 
-  environment.sessionVariables = rec {
-    GTK_THEME = "adw-gtk3-dark";
-
-    CC  = "zig cc";
-    CXX = "zig c++";
-  };
-
   home-manager = {
-    users.mgord9518 = import ./home.nix;
-    extraSpecialArgs = { inherit inputs; inherit flakes; };
+    users.${user} = import ./home.nix;
+    extraSpecialArgs = { inherit user; systemConfig = config; inherit flakes; };
 
     users.gdm = { lib, ... }: {
       home.file.".local/config/monitors.xml".source = ./monitors.xml;
@@ -195,7 +101,6 @@ in {
       home.stateVersion = "23.05";
     };
   };
-
 
   system.stateVersion = "25.05";
 }

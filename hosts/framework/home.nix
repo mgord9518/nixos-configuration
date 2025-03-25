@@ -1,6 +1,6 @@
-{ inputs, flakes, config, pkgs, ... }: rec {
-  home.username = "mgord9518";
-  home.homeDirectory = "/home/mgord9518";
+{ inputs, flakes, config, systemConfig, pkgs, user, ... }: rec {
+  home.username = user;
+  home.homeDirectory = systemConfig.users.users.${user}.home;
 
   imports = [
     ../../modules/home/firefox-tweaks.nix
@@ -39,7 +39,6 @@
   programs.gnome-shell = {
     enable = true;
     extensions = [
-      { package = pkgs.gnomeExtensions.gsconnect; }
       { package = pkgs.gnomeExtensions.dash-to-dock; }
       { package = pkgs.gnomeExtensions.tiling-assistant; }
       { package = pkgs.gnomeExtensions.system-monitor; }
