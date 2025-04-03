@@ -7,12 +7,11 @@
 let
   steamHome = config.users.users.mgord9518.home + "/.local/garbage/steam";
 in {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ../../modules/xdg.nix
-      ../../modules/common.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    ../../modules/xdg.nix
+    ../../modules/common.nix
+  ];
 
   boot = {
     loader.systemd-boot.enable = true;
@@ -31,23 +30,9 @@ in {
       "udev.log_priority=3"
     ];
 
-    binfmt.emulatedSystems = [
-      "aarch64-linux"
-    ];
-
-    kernelModules = [
-      "ecryptfs"
-    ];
-
     plymouth = {
       enable = true;
       theme = "bgrt";
-#      themePackages = with pkgs; [
-#        # By default we would install all themes
-#        (adi1090x-plymouth-themes.override {
-#          selected_themes = [ "hexagon_dots_alt" ];
-#        })
-#      ];
     };
 
     consoleLogLevel = 0;
@@ -85,7 +70,7 @@ in {
   };
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -94,29 +79,20 @@ in {
     pulse.enable = true;
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.mgord9518 = {
     isNormalUser = true;
     description = "mgord9518";
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    #  thunderbird
-    ];
   };
 
   # Enable automatic login for the user.
-  services.xserver.displayManager.autoLogin.enable = true;
-  services.xserver.displayManager.autoLogin.user = "mgord9518";
+  services.displayManager.autoLogin.enable = true;
+  services.displayManager.autoLogin.user = "mgord9518";
 
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
-
-  # Install firefox.
-  #programs.firefox.enable = true;
 
   programs = {
     steam = {
@@ -205,10 +181,6 @@ in {
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  environment.sessionVariables = rec {
-    GTK_THEME = "adw-gtk3-dark";
-  };
-
   fileSystems."/mnt/games" = {
     device = "/dev/disk/by-uuid/eec486fb-d735-4825-8e69-e3541e841f2b";
     fsType = "ext4";
@@ -226,5 +198,4 @@ in {
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }

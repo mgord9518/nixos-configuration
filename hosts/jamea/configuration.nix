@@ -6,7 +6,21 @@ in {
     ./hardware-configuration.nix
     ../../modules/xdg.nix
     ../../modules/common.nix
+    ../../modules/firefox-policies.nix
   ];
+
+  virtualisation = {
+    libvirtd = {
+      enable = true;
+      qemu = {
+        swtpm.enable = true;
+        ovmf.enable = true;
+        ovmf.packages = [ pkgs.OVMFFull.fd ];
+      };
+    };
+    spiceUSBRedirection.enable = true;
+  };
+  services.spice-vdagentd.enable = true;
 
   boot = {
     loader.systemd-boot.enable = true;
@@ -45,7 +59,7 @@ in {
 
   # Don't wait for internet connection to come online when booting,
   # improves startup time
-  #systemd.services.NetworkManager-wait-online.enable = false;
+  systemd.services.NetworkManager-wait-online.enable = false;
 
   networking = {
     hostName = "jamea";
@@ -53,7 +67,6 @@ in {
   };
 
   services = {
-    # Enable the X11 windowing system.
     xserver.enable = true;
 
     xserver.desktopManager.gnome.enable = true;
@@ -92,7 +105,7 @@ in {
 
       package = pkgs.steam.override {
         extraPkgs = pkgs: with pkgs; [
-          # Workaround xorg cursor issue
+          # Workaround cursor issue
           adwaita-icon-theme
         ];
         extraEnv = {
@@ -120,25 +133,20 @@ in {
       pavucontrol
       mullvad-vpn
       dolphin-emu
-      mpv
       wineWowPackages.stable
-      unrar
-      paprefs
-      p7zip
-      libnotify
-      unzip
-      jq
-      cpulimit
-      lutris
-      git
-      piper
-      deluge
       handbrake
       lutris
-      heroic
       librewolf
+      fragments
+      inkscape
+      gnome-boxes
+      ventoy-full-gtk
+      mission-center
 
       adw-gtk3
+
+      unrar
+      p7zip
 
       flakes.suyu
       
@@ -149,6 +157,11 @@ in {
       jellyfin-ffmpeg
     ];
   };
+
+  fonts.packages = with pkgs; [
+    corefonts
+    vistafonts
+  ];
 
   services = {
     mullvad-vpn.enable = true;
@@ -177,14 +190,16 @@ in {
     allowedUDPPorts = [];
   };
 
-  environment.sessionVariables = rec {
-    GTK_THEME = "adw-gtk3-dark";
-  };
+  environment.gnome.excludePackages = (with pkgs; [
+    epiphany # Gnome web
+    gnome-tour
+    gnome-system-monitor
+  ]);
 
   home-manager = {
     users.mgord9518 = import ./home.nix;
     extraSpecialArgs = { inherit flakes; };
   };
 
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "24.05";
 }

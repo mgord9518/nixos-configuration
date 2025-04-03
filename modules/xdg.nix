@@ -3,7 +3,6 @@
 
 { config, pkgs, lib, ... }:
 let
-  #home       = config.users.users.mgord9518.home;
   home       = "$HOME";
   local      = "${home}/.local";
   cacheHome  = "${local}/cache";
@@ -44,6 +43,9 @@ in {
     GOPATH        = "${dataHome}/go";
     CARGO_HOME    = "${dataHome}/rust/cargo";
 
+    # Misc data
+    MINETEST_USER_PATH = "${dataHome}/luanti";
+
     # Programming language config
     _JAVA_OPTIONS = "-Djava.util.prefs.userRoot=${configHome}/java";
 
@@ -59,8 +61,4 @@ in {
     # Misc data files
     GNUPGHOME = "${dataHome}/gnupg";
   };
-
-#  config.pkgs.steam = pkgs.steam.override {
-#    extraEnv = { HOME = garbageHome + "/steam"; };
-#  };
 }
