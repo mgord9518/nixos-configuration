@@ -29,34 +29,37 @@
   };
 
   dconf.settings = {
-    "org/gnome/Console" = { shell = [ "${flakes.mist}/bin/mist" ]; };
+    # Set shell to MIST
+    "org/gnome/Console" = { shell = [ "${flakes.mgord9518-nur.mist}/bin/mist" ]; };
+
+    "org/gnome/desktop/interface" = { gtk-theme    = "adw-gtk3-dark"; }; # GTK 3
+    "org/gnome/desktop/interface" = { color-scheme = "prefer-dark"; };
   };
 
   programs.firefox = {
     enable = true;
+
     profiles.default = {
       id = 0;
       name = "Default profile";
       isDefault = true;
+
+      userChrome = ''
+        /* Fix line displaying on top of nav bar when using adw-gtk3 theme */
+        #nav-bar {
+          border-top: 0 !important;
+          margin-right: 10 !important;
+        }
+      '';
 
       settings = {
         "sidebar.verticalTabs" = true;
 
         # Firefox scrolls too fast by default on Linux
         "mousewheel.default.delta_multiplier_y" = 200;
-      };
-    };
-    policies = {
-      ExtensionSettings = {
-        "*".installation_mode = "blocked"; # blocks all addons except the ones specified below
-        "uBlock0@raymondhill.net" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-          installation_mode = "force_installed";
-        };
-        "sponsorBlocker@ajay.app" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/file/4451103/sponsorblock-5.11.8.xpi";
-          installation_mode = "force_installed";
-        };
+
+        # Enable userChrome.css
+        "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
       };
     };
   };
@@ -64,7 +67,6 @@
   programs.gnome-shell = {
     enable = true;
     extensions = [
-      { package = pkgs.gnomeExtensions.gsconnect; }
       { package = pkgs.gnomeExtensions.dash-to-dock; }
       { package = pkgs.gnomeExtensions.tiling-assistant; }
       { package = pkgs.gnomeExtensions.system-monitor; }

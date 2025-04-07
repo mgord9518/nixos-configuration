@@ -142,6 +142,7 @@ in {
       gnome-boxes
       ventoy-full-gtk
       mission-center
+      showtime
 
       adw-gtk3
 
@@ -151,7 +152,6 @@ in {
       flakes.suyu
       
       # Jellyfin server
-      ffmpeg-full
       jellyfin
       jellyfin-web
       jellyfin-ffmpeg
@@ -192,8 +192,10 @@ in {
 
   environment.gnome.excludePackages = (with pkgs; [
     epiphany # Gnome web
+    totem # Video player
     gnome-tour
     gnome-system-monitor
+    gnome-text-editor
   ]);
 
   home-manager = {

@@ -125,6 +125,7 @@
     wl-clipboard
     dash
     tmux
+    libsecret
   ];
 
   # Set your time zone.

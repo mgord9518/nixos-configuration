@@ -1,8 +1,8 @@
 { pkgs, flakes, ... }: {
   environment.systemPackages = with pkgs; [
     # System GUI utils
-    gdm-settings
-    mission-center
+    mission-center # Alternative to GNOME system-monitor
+    showtime       # Alternative to Totem
 
     # System CLI utils
     pv
